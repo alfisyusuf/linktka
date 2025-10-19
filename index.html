@@ -21,26 +21,59 @@
         .blob1 { width: 300px; height: 300px; background: #667eea; top: -100px; left: -100px; animation: blobMove 15s infinite; }
         .blob2 { width: 400px; height: 400px; background: #764ba2; bottom: -150px; right: -100px; animation: blobMove 20s infinite reverse; }
         @keyframes blobMove { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, 50px); } }
-        /* Style tambahan untuk logo */
-        .logo-container { padding: 0.75rem; /* Memberi sedikit padding agar logo tidak menempel */ }
+        .logo-container { padding: 0.75rem; }
         .logo-image { max-width: 100%; height: auto; object-fit: contain; }
+
+        /* === Gaya untuk Loading Overlay === */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* === Gaya untuk menyembunyikan dan transisi konten === */
+        #main-content {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
     <div class="blob blob1"></div>
     <div class="blob blob2"></div>
 
     <div class="min-h-screen flex items-center justify-center p-4 py-20">
-        <div class="w-full max-w-md">
+        <div id="main-content" class="w-full max-w-md">
             <div class="text-center mb-12">
                 <div class="mb-6 inline-block badge-animate">
                     <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-xl">
-                        <div id="header-content-wrapper" class="w-full h-full rounded-full bg-white flex items-center justify-center">
-                            </div>
+                        <div id="header-content-wrapper" class="w-full h-full rounded-full bg-white flex items-center justify-center"></div>
                     </div>
                 </div>
-                
-                <h1 id="main-title" class="text-4xl font-bold text-white mb-2">Memuat...</h1>
+                <h1 id="main-title" class="text-4xl font-bold text-white mb-2"></h1>
                 <p id="subtitle" class="text-purple-200 text-lg mb-1"></p>
                 <p id="location" class="text-purple-100 text-sm flex items-center justify-center gap-1">
                     <i class="fas fa-map-marker-alt"></i>
@@ -49,26 +82,24 @@
                 <div class="mt-4 flex items-center justify-center gap-2">
                     <span id="status-badge" class="inline-flex items-center gap-2 bg-white/20 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
                         <span class="w-2 h-2 bg-green-400 rounded-full pulse-dot"></span>
-                        <span>Memuat...</span>
+                        <span></span>
                     </span>
                 </div>
             </div>
 
             <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-8 border border-white/20">
-                <p id="description" class="text-white text-center text-sm leading-relaxed">
-                    Memuat deskripsi... 🚀
-                </p>
+                <p id="description" class="text-white text-center text-sm leading-relaxed"></p>
             </div>
 
             <div id="links-container" class="space-y-4 mb-8"></div>
 
             <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
-                <p id="social-title" class="text-white text-center text-sm font-semibold mb-4">Ikuti Kami</p>
+                <p id="social-title" class="text-white text-center text-sm font-semibold mb-4"></p>
                 <div id="socials-container" class="flex gap-3 justify-center"></div>
             </div>
 
             <div class="text-center text-white/60 text-xs">
-                <p id="footer-copyright">© 2025</p>
+                <p id="footer-copyright"></p>
                 <p id="footer-tagline" class="mt-1"></p>
             </div>
         </div>
@@ -76,10 +107,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const API_URL = "https://script.google.com/macros/s/AKfycby7uwklyo8s2g7r4f8ZfOaIjB4vzUJQjUTs90TM5mp5yrwFaZDBEPkIMDbj8ZEel-k-/exec"; // <-- JANGAN LUPA GANTI URL INI
+            const API_URL = "https://script.google.com/macros/s/AKfycby7uwklyo8s2g7r4f8ZfOaIjB4vzUJQjUTs90TM5mp5yrwFaZDBEPkIMDbj8ZEel-k-/exec";
+
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const mainContent = document.getElementById('main-content');
 
             fetch(API_URL)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     renderConfig(data.config);
                     renderLinks(data.links);
@@ -87,33 +126,42 @@
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
-                    document.getElementById('main-title').innerText = "Gagal Memuat Data";
+                    mainContent.innerHTML = `<div class="text-center text-white bg-red-500/50 p-4 rounded-xl">
+                                                <h3 class="font-bold text-lg">Oops! Terjadi Kesalahan</h3>
+                                                <p class="text-sm">Gagal memuat data. Silakan coba muat ulang halaman atau periksa kembali URL API Anda.</p>
+                                             </div>`;
+                })
+                .finally(() => {
+                    // Sembunyikan loading overlay
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                    }, 500); // Tunggu transisi selesai sebelum menghilangkan elemen
+
+                    // Tampilkan konten utama
+                    mainContent.style.visibility = 'visible';
+                    mainContent.style.opacity = '1';
                 });
         });
 
         function renderConfig(config) {
             const headerWrapper = document.getElementById('header-content-wrapper');
-            
-            // Logika baru: Cek jika ada URL logo
             if (config.logo_url && config.logo_url.trim() !== '') {
-                // Jika ada URL, tampilkan gambar logo
                 headerWrapper.innerHTML = `<div class="logo-container"><img src="${config.logo_url}" alt="Logo" class="logo-image"></div>`;
-                headerWrapper.classList.remove('text-5xl'); // Hapus class ukuran font ikon
+                headerWrapper.classList.remove('text-5xl');
             } else {
-                // Jika tidak ada, tampilkan ikon dari Font Awesome
                 headerWrapper.innerHTML = `<i class="${config.icon_header} gradient-text"></i>`;
-                headerWrapper.classList.add('text-5xl'); // Tambahkan kembali class ukuran font
+                headerWrapper.classList.add('text-5xl');
             }
-            
             document.title = config.main_title + ' - ' + config.location;
-            document.getElementById('main-title').innerText = config.main_title;
-            document.getElementById('subtitle').innerText = config.subtitle;
-            document.querySelector('#location span').innerText = config.location;
-            document.querySelector('#status-badge span:last-child').innerText = config.status_text;
-            document.getElementById('description').innerText = config.description;
-            document.getElementById('social-title').innerText = config.social_title;
-            document.getElementById('footer-copyright').innerText = config.footer_copyright;
-            document.getElementById('footer-tagline').innerText = config.footer_tagline;
+            document.getElementById('main-title').innerText = config.main_title || 'Judul Utama';
+            document.getElementById('subtitle').innerText = config.subtitle || 'Subjudul';
+            document.querySelector('#location span').innerText = config.location || 'Lokasi';
+            document.querySelector('#status-badge span:last-child').innerText = config.status_text || 'Status';
+            document.getElementById('description').innerText = config.description || 'Deskripsi singkat.';
+            document.getElementById('social-title').innerText = config.social_title || 'Sosial Media';
+            document.getElementById('footer-copyright').innerText = config.footer_copyright || '© 2025';
+            document.getElementById('footer-tagline').innerText = config.footer_tagline || 'Tagline';
         }
 
         function renderLinks(links) {
