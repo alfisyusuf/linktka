@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TKA SMA ABBS Surakarta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .link-card { transition: all 0.3s ease; }
+        .link-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .badge-animate { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .blob { position: fixed; opacity: 0.1; filter: blur(40px); z-index: -1; }
+        .blob1 { width: 300px; height: 300px; background: #667eea; top: -100px; left: -100px; animation: blobMove 15s infinite; }
+        .blob2 { width: 400px; height: 400px; background: #764ba2; bottom: -150px; right: -100px; animation: blobMove 20s infinite reverse; }
+        @keyframes blobMove { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, 50px); } }
+        /* Style tambahan untuk logo */
+        .logo-container { padding: 0.75rem; /* Memberi sedikit padding agar logo tidak menempel */ }
+        .logo-image { max-width: 100%; height: auto; object-fit: contain; }
+    </style>
+</head>
+<body>
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+
+    <div class="min-h-screen flex items-center justify-center p-4 py-20">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-12">
+                <div class="mb-6 inline-block badge-animate">
+                    <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-400 to-pink-300 p-1 shadow-xl">
+                        <div id="header-content-wrapper" class="w-full h-full rounded-full bg-white flex items-center justify-center">
+                            </div>
+                    </div>
+                </div>
+                
+                <h1 id="main-title" class="text-4xl font-bold text-white mb-2">Memuat...</h1>
+                <p id="subtitle" class="text-purple-200 text-lg mb-1"></p>
+                <p id="location" class="text-purple-100 text-sm flex items-center justify-center gap-1">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span></span>
+                </p>
+                <div class="mt-4 flex items-center justify-center gap-2">
+                    <span id="status-badge" class="inline-flex items-center gap-2 bg-white/20 text-white px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+                        <span class="w-2 h-2 bg-green-400 rounded-full pulse-dot"></span>
+                        <span>Memuat...</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 mb-8 border border-white/20">
+                <p id="description" class="text-white text-center text-sm leading-relaxed">
+                    Memuat deskripsi... 🚀
+                </p>
+            </div>
+
+            <div id="links-container" class="space-y-4 mb-8"></div>
+
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 mb-8">
+                <p id="social-title" class="text-white text-center text-sm font-semibold mb-4">Ikuti Kami</p>
+                <div id="socials-container" class="flex gap-3 justify-center"></div>
+            </div>
+
+            <div class="text-center text-white/60 text-xs">
+                <p id="footer-copyright">© 2025</p>
+                <p id="footer-tagline" class="mt-1"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_URL = "PASTE_WEB_APP_URL_ANDA_DI_SINI"; // <-- JANGAN LUPA GANTI URL INI
+
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(data => {
+                    renderConfig(data.config);
+                    renderLinks(data.links);
+                    renderSocials(data.social_links);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('main-title').innerText = "Gagal Memuat Data";
+                });
+        });
+
+        function renderConfig(config) {
+            const headerWrapper = document.getElementById('header-content-wrapper');
+            
+            // Logika baru: Cek jika ada URL logo
+            if (config.logo_url && config.logo_url.trim() !== '') {
+                // Jika ada URL, tampilkan gambar logo
+                headerWrapper.innerHTML = `<div class="logo-container"><img src="${config.logo_url}" alt="Logo" class="logo-image"></div>`;
+                headerWrapper.classList.remove('text-5xl'); // Hapus class ukuran font ikon
+            } else {
+                // Jika tidak ada, tampilkan ikon dari Font Awesome
+                headerWrapper.innerHTML = `<i class="${config.icon_header} gradient-text"></i>`;
+                headerWrapper.classList.add('text-5xl'); // Tambahkan kembali class ukuran font
+            }
+            
+            document.title = config.main_title + ' - ' + config.location;
+            document.getElementById('main-title').innerText = config.main_title;
+            document.getElementById('subtitle').innerText = config.subtitle;
+            document.querySelector('#location span').innerText = config.location;
+            document.querySelector('#status-badge span:last-child').innerText = config.status_text;
+            document.getElementById('description').innerText = config.description;
+            document.getElementById('social-title').innerText = config.social_title;
+            document.getElementById('footer-copyright').innerText = config.footer_copyright;
+            document.getElementById('footer-tagline').innerText = config.footer_tagline;
+        }
+
+        function renderLinks(links) {
+            const container = document.getElementById('links-container');
+            container.innerHTML = '';
+            links.forEach(link => {
+                const card = `
+                <a href="${link.url}" target="_blank" class="link-card block rounded-2xl p-5 shadow-lg hover:shadow-2xl text-white" style="background: linear-gradient(to right, ${link.gradient_from}, ${link.gradient_to});">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-xl backdrop-blur-sm">
+                            <i class="${link.icon_class}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">${link.title}</h3>
+                            <p class="text-sm text-white/80">${link.subtitle}</p>
+                        </div>
+                        <i class="fas fa-chevron-right ml-auto"></i>
+                    </div>
+                </a>`;
+                container.innerHTML += card;
+            });
+        }
+
+        function renderSocials(socials) {
+            const container = document.getElementById('socials-container');
+            container.innerHTML = '';
+            socials.forEach(social => {
+                const socialLink = `
+                <a href="${social.url}" target="_blank" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
+                    <i class="${social.icon_class}"></i>
+                </a>`;
+                container.innerHTML += socialLink;
+            });
+        }
+    </script>
+</body>
+</html>
